@@ -1,0 +1,111 @@
+
+# Data and Model parameters
+hydra:
+  job:
+    chdir: False
+model:
+  input_size: [128, 128]
+  input_dim: 3
+  h_pyr_dim: [16, 32, 64, 128]
+  h_inter_dim: [4, 8, 16, 32]
+  fb_dim: [16, 32, 64, 64]
+  exc_kernel_size: 
+  - [5, 5]
+  - [5, 5]
+  - [5, 5]
+  - [3, 3]
+  inh_kernel_size: 
+  - [5, 5]
+  - [5, 5]
+  - [5, 5]
+  - [3, 3]
+  immediate_inhibition: True
+  num_layers: 4
+  num_steps: 5
+  num_classes: 6
+
+  modulation: True
+  #modulation_type: ag
+  modulation_type: lr
+  modulation_on: layer_output
+  #modulation_timestep: all
+  modulation_timestep: all
+  pertubation: False
+  pertubation_type: lr
+  pertubation_on: hidden
+  pertubation_timestep: 0
+  layer_time_delay: False
+  exc_rectify: Null
+  inh_rectify: pos
+  flush_hidden: True
+  hidden_init_mode: zeros
+  fb_init_mode: zeros
+  out_init_mode: zeros
+  fb_adjacency: 
+  - [0, 0, 0, 0]
+  - [1, 0, 0, 0]
+  - [0, 1, 0, 0]
+  - [0, 0, 1, 0]
+  pool_kernel_size: [5, 5]
+  pool_stride: [2, 2]
+  bias: True
+  dropout: 0.5
+  pre_inh_activation: tanh
+  post_inh_activation: Null
+  fc_dim: 256
+# Training parameters
+data:
+  root: /scratch/wyy/data/shape_balancedd
+  assets_path: data/CLEVR_v1.0/cues
+  #batch_size: 256
+  batch_size: 128
+  val_batch_size: 64
+  #holdout: [blue, green]
+  holdout: []
+  mode: shape
+  primitive: True
+  num_workers: 8
+optimizer: 
+  fn: adamw
+  lr: 0.0004
+  momentum: 0.9
+  beta1: 0.9
+  beta2: 0.999
+scheduler:
+  fn: one_cycle
+  pct_start: 0.3
+criterion: 
+  fn: ce
+  all_timesteps: False
+compile:
+  disable: True
+  fullgraph: True
+  dynamic: Null
+  backend: inductor
+  mode: reduce-overhead
+train:
+  amp: true  # 启用混合精度
+  accumulation_steps: 4  # 梯度累积步数
+  empty_cache_freq: 100  
+
+  matmul_precision: high
+  #epochs: 150
+  epochs: 100
+  log_freq: 5
+  grad_clip:
+    #disable: True
+    disable: False
+    type: norm
+    value: 1.0
+checkpoint:
+  disable: True
+  root: checkpoints_7/ei
+  run: Null
+  epoch: Null
+seed: Null
+tqdm: True
+wandb: False
+
+verbose: True  # 控制是否打印详细日志
+
+
