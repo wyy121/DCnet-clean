@@ -52,7 +52,8 @@ model:
   dropout: 0.5
   pre_inh_activation: tanh
   post_inh_activation: Null
-  fc_dim: 256
+  #fc_dim: 256
+  fc_dim: 1024
 # Training parameters
 data:
   #root: /scratch/wyy/data/color_balanced
@@ -69,7 +70,7 @@ data:
 optimizer: 
   fn: adamw
   #lr: 0.0004
-  lr: 0.001
+  lr: 0.0004
   momentum: 0.9
   beta1: 0.9
   beta2: 0.999

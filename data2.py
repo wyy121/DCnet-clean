@@ -197,12 +197,20 @@ class qCLEVRDataset(Dataset):
         cues = []
         counts = []
         modes = []
-        if self.num_workers > 1:
-            pool = multiprocessing.Pool(self.num_workers)
+        pool = None
+        use_multiprocessing = self.num_workers > 1
+        if use_multiprocessing:
+            try:
+                pool = multiprocessing.Pool(self.num_workers)
+            except (OSError, PermissionError) as exc:
+                print(
+                    f"Falling back to single-process file scan because multiprocessing is unavailable: {exc}"
+                )
+                use_multiprocessing = False
         for _mode in self._modes:
             spath = os.path.join(self.data_root, f"{self.split}_{_mode}", "scenes")
             scene_paths = sorted(glob.glob(os.path.join(spath, "*")))
-            if self.num_workers > 1:
+            if use_multiprocessing:
                 path, cue, count, mode = zip(
                     *pool.starmap(
                         self.get_file, zip([_mode] * len(scene_paths), scene_paths)
@@ -220,6 +228,10 @@ class qCLEVRDataset(Dataset):
             cues.extend(cue)
             counts.extend(count)
             modes.extend(mode)
+
+        if pool is not None:
+            pool.close()
+            pool.join()
 
         return paths, cues, counts, modes
 
@@ -272,6 +284,11 @@ def get_qclevr_dataloaders(
     num_workers: int = 0,
     seed: Optional[int] = None,
 ):
+    dataloader_kwargs = {}
+    if num_workers > 0:
+        dataloader_kwargs["persistent_workers"] = True
+        dataloader_kwargs["prefetch_factor"] = 4
+
     clevr_transforms = transforms.Compose(
         [
             transforms.ToTensor(),
@@ -307,6 +324,7 @@ def get_qclevr_dataloaders(
         pin_memory=torch.cuda.is_available(),
         worker_init_fn=seed_worker if seed is not None else None,
         generator=torch.Generator().manual_seed(seed) if seed is not None else None,
+        **dataloader_kwargs,
     )
     val_dataloader = DataLoader(
         val_dataset,
@@ -316,5 +334,6 @@ def get_qclevr_dataloaders(
         pin_memory=torch.cuda.is_available(),
         worker_init_fn=seed_worker if seed is not None else None,
         generator=torch.Generator().manual_seed(seed) if seed is not None else None,
+        **dataloader_kwargs,
     )
     return train_dataloader, val_dataloader

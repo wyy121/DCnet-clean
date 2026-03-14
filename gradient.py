@@ -2,11 +2,24 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from model import Conv2dEIRNN
+from model_channel_tau import Conv2dEIRNN
 import os
 import yaml
 import argparse
 import gc
+
+
+def convert_legacy_tau_shapes(state_dict):
+    """将旧版逐神经元tau参数压缩为新版逐channel tau参数。"""
+    converted = {}
+    for key, value in state_dict.items():
+        if key.endswith(("tau_pyr", "tau_inter")) and value.ndim == 4:
+            if value.shape[-2:] != (1, 1):
+                converted[key] = value.mean(dim=(-2, -1), keepdim=True)
+                continue
+        converted[key] = value
+    return converted
+
 
 def load_config(config_path):
     """加载配置文件"""
@@ -18,6 +31,7 @@ def load_checkpoint(model, checkpoint_path, strict=False):
     """加载检查点"""
     print(f"正在加载checkpoint: {checkpoint_path}")
     checkpoint = torch.load(checkpoint_path, map_location='cpu')
+    checkpoint_state = convert_legacy_tau_shapes(checkpoint['model_state_dict'])
     
     epoch = checkpoint.get('epoch', 0)
     print(f"Checkpoint epoch: {epoch}")
@@ -25,18 +39,18 @@ def load_checkpoint(model, checkpoint_path, strict=False):
     # 尝试加载模型
     try:
         if hasattr(model, '_orig_mod'):
-            model._orig_mod.load_state_dict(checkpoint['model_state_dict'], strict=strict)
+            model._orig_mod.load_state_dict(checkpoint_state, strict=strict)
         else:
-            model.load_state_dict(checkpoint['model_state_dict'], strict=strict)
+            model.load_state_dict(checkpoint_state, strict=strict)
         print(f"成功加载模型参数 (strict={strict})")
     except Exception as e:
         print(f"加载模型参数失败: {e}")
         print("尝试不严格加载...")
         try:
             if hasattr(model, '_orig_mod'):
-                model._orig_mod.load_state_dict(checkpoint['model_state_dict'], strict=False)
+                model._orig_mod.load_state_dict(checkpoint_state, strict=False)
             else:
-                model.load_state_dict(checkpoint['model_state_dict'], strict=False)
+                model.load_state_dict(checkpoint_state, strict=False)
             print("不严格加载成功")
         except Exception as e2:
             print(f"不严格加载也失败: {e2}")
