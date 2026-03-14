@@ -25,13 +25,23 @@ def seed_worker(worker_id):
     random.seed(worker_seed)
 
 
-def seed(seed):
+def seed(
+    seed,
+    deterministic: bool = True,
+    cudnn_benchmark: bool = False,
+    allow_tf32: bool = False,
+):
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True)
-    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    torch.backends.cudnn.benchmark = cudnn_benchmark
+    torch.backends.cuda.matmul.allow_tf32 = allow_tf32
+    torch.backends.cudnn.allow_tf32 = allow_tf32
+    torch.use_deterministic_algorithms(deterministic)
+    if deterministic:
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+    else:
+        os.environ.pop("CUBLAS_WORKSPACE_CONFIG", None)
 
 
 def get_activation_class(activation):

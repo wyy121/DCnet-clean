@@ -280,7 +280,12 @@ def train(config: DictConfig) -> None:
     config = AttrDict(config)
     # Set the random seed
     if config.seed is not None:
-        seed(config.seed)
+        seed(
+            config.seed,
+            deterministic=config.train.deterministic,
+            cudnn_benchmark=config.train.cudnn_benchmark,
+            allow_tf32=config.train.allow_tf32,
+        )
     # Set the matmul precision
     torch.set_float32_matmul_precision(config.train.matmul_precision)
     # Get device and initialize the model

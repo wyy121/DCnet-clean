@@ -90,6 +90,9 @@ train:
   amp: true  # 启用混合精度
   accumulation_steps: 4  # 梯度累积步数
   empty_cache_freq: 100  
+  deterministic: false
+  cudnn_benchmark: true
+  allow_tf32: true
 
   matmul_precision: high
   #epochs: 150
@@ -111,5 +114,4 @@ tqdm: True
 wandb: False
 
 verbose: True  # 控制是否打印详细日志
-
 
