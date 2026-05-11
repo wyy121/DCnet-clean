@@ -2,25 +2,14 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-.vscode/
-.idea/
-.DS_Store
-
-*.log
-
-checkpoints/
-checkpoints_*/
-outputs/
-multirun/
-wandb/
-
-structured_visualization/
-structured_visualization*/
-structured_visualization_with_predictions/
-structured_visualization_with_predictions*/
-simplified_visualization/
-
+<<<<<<< HEAD
+=======
+>>>>>>> 6aadb08b4f (Add fixed cross-covariance feedback modulation for Conv2dEIRNN)
+<<<<<<< HEAD
+=======
+>>>>>>> 6aadb08b4f (Add fixed cross-covariance feedback modulation for Conv2dEIRNN)
+<<< HEAD
+>>>>>>> 6aadb08b4f (Add fixed cross-covariance feedback modulation for Conv2dEIRNN)
 *.pt
 *.pth
 *.ckpt
